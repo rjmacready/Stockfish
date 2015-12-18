@@ -1,0 +1,3 @@
+(use-modules (userscripts))
+
+; other glue code ...

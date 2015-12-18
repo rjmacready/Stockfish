@@ -45,12 +45,15 @@ class Thread {
   std::thread nativeThread;
   Mutex mutex;
   ConditionVariable sleepCondition;
-  bool exit, searching;
-
+  bool exit, searching, scm_inited;
+  
+  
 public:
   Thread();
   virtual ~Thread();
   virtual void search();
+
+  void init_and_idle();
   void idle_loop();
   void start_searching(bool resume = false);
   void wait_for_search_finished();

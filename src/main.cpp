@@ -27,9 +27,11 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#include "guile.h"
 
 int main(int argc, char* argv[]) {
-
+  scm_with_guile(&init_guile, NULL);
+  
   std::cout << engine_info() << std::endl;
 
   UCI::init(Options);

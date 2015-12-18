@@ -24,6 +24,7 @@
 #include "search.h"
 #include "thread.h"
 #include "uci.h"
+#include "guile.h"
 
 using namespace Search;
 
@@ -34,7 +35,7 @@ ThreadPool Threads; // Global object
 
 Thread::Thread() {
 
-  resetCalls = exit = false;
+  resetCalls = exit = scm_inited = false;
   maxPly = callsCnt = 0;
   history.clear();
   counterMoves.clear();
@@ -42,8 +43,17 @@ Thread::Thread() {
 
   std::unique_lock<Mutex> lk(mutex);
   searching = true;
-  nativeThread = std::thread(&Thread::idle_loop, this);
+  nativeThread = std::thread(&Thread::init_and_idle, this);
   sleepCondition.wait(lk, [&]{ return !searching; });
+}
+
+void Thread::init_and_idle()
+{
+  if(scm_inited == false) {
+    scm_inited = true;
+    scm_with_guile(&init_guile, NULL);
+  }
+  idle_loop();
 }
 
 
@@ -93,7 +103,6 @@ void Thread::start_searching(bool resume) {
 /// Thread::idle_loop() is where the thread is parked when it has no work to do
 
 void Thread::idle_loop() {
-
   while (!exit)
   {
       std::unique_lock<Mutex> lk(mutex);
@@ -120,7 +129,6 @@ void Thread::idle_loop() {
 /// allocation of Endgames in the Thread constructor.
 
 void ThreadPool::init() {
-
   push_back(new MainThread);
   read_uci_options();
 }

@@ -27,6 +27,7 @@
 #include "evaluate.h"
 #include "material.h"
 #include "pawns.h"
+#include "guile.h"
 
 namespace {
 
@@ -765,8 +766,10 @@ Value Eval::evaluate(const Position& pos) {
 
   // If we have a specialized evaluation function for the current material
   // configuration, call it and return.
-  if (ei.me->specialized_eval_exists())
+  if (ei.me->specialized_eval_exists()) {
+    //    printf("specialized!\n");
       return ei.me->evaluate(pos);
+  }
 
   // Probe the pawn hash table
   ei.pi = Pawns::probe(pos);
@@ -848,7 +851,15 @@ Value Eval::evaluate(const Position& pos) {
       Trace::add(TOTAL, score);
   }
 
-  return (pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo; // Side to move point of view
+  Value r = (pos.side_to_move() == WHITE ? v : -v) + Eval::Tempo;
+
+  //#if WITH_GUILE
+
+  r = guile_evaluate(pos, r);
+  
+  //  #endif
+
+  return r; // Side to move point of view
 }
 
 // Explicit template instantiations
