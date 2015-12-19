@@ -28,6 +28,7 @@
 #include "misc.h"
 #include "position.h"
 #include "types.h"
+#include "guile.h"
 
 namespace Search {
 

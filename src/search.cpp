@@ -376,7 +376,10 @@ void Thread::search() {
 
   size_t multiPV = Options["MultiPV"];
   Skill skill(Options["Skill Level"]);
-
+  
+  size_t scm_multiPV = guile_get_multipv();
+  multiPV = std::max(scm_multiPV, multiPV);
+  
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
@@ -543,6 +546,10 @@ void Thread::search() {
   if (EasyMove.stableCnt < 6 || easyPlayed)
       EasyMove.clear();
 
+  
+  //      printf("score of 1st is %d\n", Threads.main()->rootMoves[0].score);
+  guile_pick_best(multiPV);
+      
   // If skill level is enabled, swap best PV line with the sub-optimal one
   if (skill.enabled())
       std::swap(rootMoves[0], *std::find(rootMoves.begin(),
